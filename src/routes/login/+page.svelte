@@ -1,20 +1,20 @@
 <script lang="ts">
-    import { onMount } from 'svelte';
     import { enhance } from '$app/forms';
+    import { onMount } from 'svelte';
 
     export let form;
 
     let isSubmitting = false;
 
-    // Use onMount to clear any previous messages when the component is mounted
     onMount(() => {
-        form = { success: '', message: '' };
+        // This is a good place for initialization logic if needed.
+        // The 'form' variable is already reactive, so no need to reset it here.
     });
 
     /**
      * Handles the form submission for registration.
      */
-    async function handleRegister(event?: Event): Promise<void> {
+    async function handleLogin(event?: Event): Promise<void> {
         if (event) event.preventDefault();
     }
 </script>
@@ -28,38 +28,24 @@
         </div>
 
         <div class="relative z-10 text-center">
-            <h1 class="text-3xl font-extrabold text-gray-900 mb-2 font-inter">Create an account</h1>
+            <h1 class="text-3xl font-extrabold text-gray-900 mb-2 font-inter">Welcome back!</h1>
             <p class="text-gray-500 text-sm mb-8 font-inter">
-                Start your journey with us today.
+                Sign in to your account.
             </p>
 
-            {#if form?.message && form?.success}
-                <div class="bg-green-100 text-green-700 border border-green-300 rounded-xl p-4 mb-4 font-inter transition-all duration-300 ease-in-out">
-                    <strong class="font-bold">Success:</strong> {form.message}
-                </div>
-            {:else if form?.message}
+            {#if form?.message && !form?.success}
                 <div class="bg-red-100 text-red-700 border border-red-300 rounded-xl p-4 mb-4 font-inter transition-all duration-300 ease-in-out">
                     <strong class="font-bold">Error:</strong> {form.message}
                 </div>
             {/if}
 
-            <form method="POST" action="?/register" use:enhance={() => {
+            <form method="POST" action="?/login" use:enhance={() => {
                 isSubmitting = true;
                 return async ({ update }) => {
                     await update();
                     isSubmitting = false;
                 };
             }} class="space-y-6 text-left">
-                <div>
-                    <label for="name" class="block text-sm font-medium text-gray-700 mb-1 font-inter">Full Name</label>
-                    <input
-                        type="text"
-                        name="name"
-                        id="name"
-                        required
-                        class="w-full bg-gray-100 text-gray-900 border border-gray-300 rounded-xl py-3 px-4 focus:outline-none focus:ring-2 focus:ring-orange-500 transition-colors duration-300 font-inter"
-                    />
-                </div>
                 <div>
                     <label for="email" class="block text-sm font-medium text-gray-700 mb-1 font-inter">Email Address</label>
                     <input
@@ -80,16 +66,6 @@
                         class="w-full bg-gray-100 text-gray-900 border border-gray-300 rounded-xl py-3 px-4 focus:outline-none focus:ring-2 focus:ring-orange-500 transition-colors duration-300 font-inter"
                     />
                 </div>
-                <div>
-                    <label for="confirm-password" class="block text-sm font-medium text-gray-700 mb-1 font-inter">Confirm Password</label>
-                    <input
-                        type="password"
-                        name="passwordConfirm"
-                        id="confirm-password"
-                        required
-                        class="w-full bg-gray-100 text-gray-900 border border-gray-300 rounded-xl py-3 px-4 focus:outline-none focus:ring-2 focus:ring-orange-500 transition-colors duration-300 font-inter"
-                    />
-                </div>
                 <button
                     type="submit"
                     disabled={isSubmitting}
@@ -101,14 +77,14 @@
                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
                     {:else}
-                        Register
+                        Log In
                     {/if}
                 </button>
             </form>
             
             <p class="text-sm text-gray-600 mt-6 font-inter">
-                Already have an account? 
-                <a href="/login" class="text-orange-500 hover:underline transition-colors duration-200">Login here</a>
+                Don't have an account? 
+                <a href="/register" class="text-orange-500 hover:underline transition-colors duration-200">Register here</a>
             </p>
         </div>
     </div>
