@@ -1,137 +1,164 @@
 <script>
-  import { onMount } from 'svelte';
-  
-  /**
-   * @typedef {object} PageData
-   * @property {Array<import('pocketbase').RecordModel>} products
-   */
-  
-  /** @type {PageData} */
-  export let data;
-  let products = data.products;
+    import { products } from '$lib/simulatedProducts.js';
+    import { addToCart, cartItems } from '$lib/stores/cartStore.js';
+    import { goto } from '$app/navigation';
+    import { page } from '$app/stores';
+    import { fly } from 'svelte/transition';
+
+    // Use a slice to create distinct sections for the homepage
+    const featuredProducts = products.slice(0, 4);
+    const newArrivals = products.slice(4, 8);
+
+    // Check if the user is authenticated from the layout data
+    $: user = $page.data?.user;
+
+    const handleAddToCart = (product) => {
+        if (!user) {
+            // If the user is not authenticated, redirect to the login page
+            console.warn('User not authenticated. Redirecting to login page.');
+            goto('/login');
+            return;
+        }
+
+        // If authenticated, add the product to the cart
+        addToCart(product);
+    };
+
+    let showMobileMenu = false;
 </script>
 
-<svelte:head>
-  <title>Jason Stores | Modern Shopping</title>
-</svelte:head>
-
-<section class="bg-[#121212] text-white py-20 px-6 text-center overflow-hidden relative">
-  <div class="absolute inset-0 z-0 opacity-20" style="background: radial-gradient(circle, rgba(246, 139, 30, 0.4) 0%, rgba(18, 18, 18, 0) 70%);"></div>
-  <div class="relative z-10">
-    <h1 class="text-4xl md:text-6xl font-extrabold mb-4 animate-fade-in-up">Welcome to Jason Stores</h1>
-    <p class="text-lg md:text-xl text-gray-300 mb-6 animate-fade-in-up-delay">Shop everything you need, delivered fast.</p>
-    <a href="/shop" class="bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold px-8 py-3 rounded-full shadow-lg hover:from-orange-600 hover:to-orange-700 transition-all duration-300 transform hover:scale-105">
-      Start Shopping
-    </a>
-  </div>
-</section>
-
-<section class="py-16 px-4 sm:px-6 bg-white">
-  <div class="max-w-7xl mx-auto">
-    <h2 class="text-3xl font-bold text-gray-900 mb-8 text-center sm:text-left">Featured Products</h2>
-    {#if products && products.length > 0}
-      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-        {#each products.slice(0, 8) as product}
-          <a href={`/product/${product.id}`} class="block bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-            <div class="w-full h-44 sm:h-56 overflow-hidden">
-              <img src={`http://localhost:8090/api/files/${product.collectionId}/${product.id}/${product.image}`} alt={product.name} class="w-full h-full object-cover transition-transform duration-300 hover:scale-110" />
-            </div>
-            <div class="p-4 sm:p-5">
-              <h3 class="font-semibold text-base text-gray-800 truncate mb-1">{product.name}</h3>
-              <p class="text-gray-500 text-xs line-clamp-2 mb-3">{product.description}</p>
-              <div class="mt-2 flex justify-between items-center">
-                <span class="text-orange-500 font-bold text-lg">₦{product.price}</span>
-                <button class="bg-gray-900 text-white text-sm px-4 py-2 rounded-full hover:bg-orange-500 transition-colors duration-300">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block -mt-0.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                  </svg>
-                  Add
-                </button>
-              </div>
-            </div>
-          </a>
-        {/each}
-      </div>
+<!-- Mobile Menu Overlay -->
+{#if showMobileMenu}
+<div
+    transition:fly={{ y: -50, duration: 250 }}
+    class="fixed inset-0 bg-white z-40 p-6 flex flex-col items-center justify-center space-y-8 md:hidden"
+>
+    <button on:click={() => showMobileMenu = false} class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 focus:outline-none" aria-label="Close mobile menu">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-8 h-8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+    </button>
+    <a href="/" class="text-3xl font-extrabold text-gray-900 transition-colors duration-200 hover:text-orange-600">Home</a>
+    <a href="/products" class="text-3xl font-extrabold text-gray-900 transition-colors duration-200 hover:text-orange-600">Products</a>
+    {#if user}
+        <span class="text-2xl font-bold text-gray-700">Hello, {user.name || user.username}!</span>
+        <form method="POST" action="/logout">
+            <button type="submit" class="w-full bg-red-500 text-white font-semibold py-3 px-8 text-xl rounded-full shadow-lg transition-colors duration-200 hover:bg-red-600">
+                Log Out
+            </button>
+        </form>
     {:else}
-      <p class="text-center text-gray-500">No featured products found. Please check back later!</p>
+        <a href="/login" class="w-full text-center text-3xl font-extrabold text-gray-900 transition-colors duration-200 hover:text-orange-600">Login</a>
+        <a href="/register" class="w-full text-center bg-orange-600 text-white font-bold py-3 px-8 text-xl rounded-full shadow-lg transition-colors duration-200 hover:bg-orange-700">
+            Register
+        </a>
     {/if}
-  </div>
-</section>
+</div>
+{/if}
 
-<section class="bg-gray-50 py-12 px-4 sm:px-6">
-  <div class="max-w-7xl mx-auto">
-    <h2 class="text-2xl font-bold text-gray-900 mb-6 text-center sm:text-left">Shop by Category</h2>
-    <div class="grid grid-cols-3 md:grid-cols-6 gap-3 sm:gap-4">
-      <a href="/category/phones" class="block bg-white border border-gray-200 rounded-xl p-4 sm:p-6 text-center hover:bg-orange-50 hover:border-orange-200 transition-all duration-200">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-orange-500 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
-        </svg>
-        <h3 class="text-sm sm:text-base font-medium text-gray-800">Phones</h3>
-      </a>
-      <a href="/category/fashion" class="block bg-white border border-gray-200 rounded-xl p-4 sm:p-6 text-center hover:bg-orange-50 hover:border-orange-200 transition-all duration-200">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-orange-500 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.01 12.01 0 003 9c0 5.591 3.824 10.29 9 11.691 5.176-1.401 9-6.1 9-11.691a12.01 12.01 0 00-.382-2.816z" />
-        </svg>
-        <h3 class="text-sm sm:text-base font-medium text-gray-800">Fashion</h3>
-      </a>
-      <a href="/category/electronics" class="block bg-white border border-gray-200 rounded-xl p-4 sm:p-6 text-center hover:bg-orange-50 hover:border-orange-200 transition-all duration-200">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-orange-500 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9.75 17M12 18h.01M17.25 17L17.25 17M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        <h3 class="text-sm sm:text-base font-medium text-gray-800">Electronics</h3>
-      </a>
-      <a href="/category/beauty" class="block bg-white border border-gray-200 rounded-xl p-4 sm:p-6 text-center hover:bg-orange-50 hover:border-orange-200 transition-all duration-200">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-orange-500 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.311 8.875A10.01 10.01 0 0112 18a10.01 10.01 0 01-8.311-9.125l-.75-.75a1 1 0 01-.061-1.353l.75-.75A1 1 0 0112 3a1 1 0 01.061 1.353l-.75.75a10.01 10.01 0 01-8.311 9.125M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        <h3 class="text-sm sm:text-base font-medium text-gray-800">Beauty</h3>
-      </a>
-      <a href="/category/home" class="block bg-white border border-gray-200 rounded-xl p-4 sm:p-6 text-center hover:bg-orange-50 hover:border-orange-200 transition-all duration-200">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-orange-500 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m0 0l-7 7-7-7" />
-        </svg>
-        <h3 class="text-sm sm:text-base font-medium text-gray-800">Home</h3>
-      </a>
-      <a href="/category/groceries" class="block bg-white border border-gray-200 rounded-xl p-4 sm:p-6 text-center hover:bg-orange-50 hover:border-orange-200 transition-all duration-200">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-orange-500 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h18M3 6h18M3 9h18M3 12h18M3 15h18M3 18h18M3 21h18" />
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5h6" />
-        </svg>
-        <h3 class="text-sm sm:text-base font-medium text-gray-800">Groceries</h3>
-      </a>
+<!-- Hero Section -->
+<section class="bg-gradient-to-r from-orange-500 to-amber-500 text-white py-24 rounded-b-3xl mb-12 shadow-inner">
+    <div class="container mx-auto text-center">
+        <h1 class="text-5xl md:text-6xl font-extrabold mb-4 drop-shadow-md">
+            Welcome to Jaben Stores
+        </h1>
+        <p class="text-xl md:text-2xl font-light mb-8 max-w-2xl mx-auto drop-shadow-sm">
+            Discover a world of unique products and exceptional craftsmanship.
+        </p>
+        <a href="/products" class="bg-white text-orange-600 font-bold py-3 px-8 rounded-full shadow-lg hover:bg-gray-100 transition-colors duration-300 transform hover:scale-105">
+            Shop Now
+        </a>
     </div>
-  </div>
 </section>
 
-<section class="py-16 px-6 text-center bg-gray-900 text-white">
-  <div class="max-w-xl mx-auto">
-    <h2 class="text-3xl font-bold mb-3">Don't Miss Out!</h2>
-    <p class="text-gray-300 mb-6">Join our community and get access to exclusive deals and special offers.</p>
-    <a href="/signup" class="bg-orange-500 text-white px-8 py-3 rounded-full font-semibold hover:bg-orange-600 transition-colors duration-300 transform hover:scale-105">
-      Create Account
-    </a>
-  </div>
+<!-- Featured Products Section -->
+<section class="container mx-auto p-4 md:p-8">
+    <div class="text-center mb-12">
+        <h2 class="text-3xl font-bold text-gray-900 mb-2">Featured Products</h2>
+        <p class="text-lg text-gray-600">Hand-picked items just for you.</p>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {#each featuredProducts as product (product.id)}
+            <a href={`/products/${product.id}`} class="block transform hover:scale-105 transition-transform duration-200">
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                    <img src={product.image} alt={product.name} class="w-full h-48 object-cover object-center" />
+                    <div class="p-5 text-center flex flex-col items-center">
+                        <h3 class="text-lg font-bold text-gray-900 mb-1">{product.name}</h3>
+                        <p class="text-gray-500 text-sm mb-3 truncate w-full">{product.description}</p>
+                        <div class="flex items-center justify-center space-x-4 mt-auto">
+                            <p class="text-xl font-bold text-orange-600">${product.price.toFixed(2)}</p>
+                            <button
+                                on:click|preventDefault={(e) => {
+                                    e.stopPropagation(); // Prevents the parent link from being triggered
+                                    handleAddToCart(product);
+                                }}
+                                class="bg-orange-500 text-white font-semibold py-2 px-4 rounded-full shadow-md hover:bg-orange-600 transition-colors duration-200"
+                            >
+                                Add to Cart
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        {/each}
+    </div>
 </section>
 
-<style>
-  @keyframes fadeInUp {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
+<!-- Why Choose Us Section -->
+<section class="bg-gray-200 py-16 mt-12 rounded-3xl shadow-inner">
+    <div class="container mx-auto text-center">
+        <h2 class="text-3xl font-bold text-gray-900 mb-4">Why Choose Us?</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 p-4">
+            <div class="bg-white p-6 rounded-xl shadow-md transform transition-all duration-300 hover:scale-105">
+                <div class="text-4xl text-orange-600 mb-4">✓</div>
+                <h3 class="text-xl font-bold mb-2">Quality Products</h3>
+                <p class="text-gray-600">Each item is carefully selected for its craftsmanship and durability.</p>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-md transform transition-all duration-300 hover:scale-105">
+                <div class="text-4xl text-orange-600 mb-4">🚚</div>
+                <h3 class="text-xl font-bold mb-2">Fast Shipping</h3>
+                <p class="text-gray-600">We ensure your order gets to your doorstep quickly and safely.</p>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-md transform transition-all duration-300 hover:scale-105">
+                <div class="text-4xl text-orange-600 mb-4">⭐</div>
+                <h3 class="text-xl font-bold mb-2">Exceptional Service</h3>
+                <p class="text-gray-600">Our support team is ready to help you with any questions or concerns.</p>
+            </div>
+        </div>
+    </div>
+</section>
 
-  .animate-fade-in-up {
-    animation: fadeInUp 0.8s ease-out forwards;
-  }
+<!-- New Arrivals Section -->
+<section class="container mx-auto p-4 md:p-8 mt-12">
+    <div class="text-center mb-12">
+        <h2 class="text-3xl font-bold text-gray-900 mb-2">New Arrivals</h2>
+        <p class="text-lg text-gray-600">The latest additions to our collection.</p>
+    </div>
 
-  .animate-fade-in-up-delay {
-    animation: fadeInUp 0.8s ease-out 0.2s forwards;
-    opacity: 0; /* Ensures it starts hidden */
-  }
-</style>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {#each newArrivals as product (product.id)}
+            <a href={`/products/${product.id}`} class="block transform hover:scale-105 transition-transform duration-200">
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                    <img src={product.image} alt={product.name} class="w-full h-48 object-cover object-center" />
+                    <div class="p-5 text-center flex flex-col items-center">
+                        <h3 class="text-lg font-bold text-gray-900 mb-1">{product.name}</h3>
+                        <p class="text-gray-500 text-sm mb-3 truncate w-full">{product.description}</p>
+                        <div class="flex items-center justify-center space-x-4 mt-auto">
+                            <p class="text-xl font-bold text-orange-600">${product.price.toFixed(2)}</p>
+                            <button
+                                on:click|preventDefault={(e) => {
+                                    e.stopPropagation(); // Prevents the parent link from being triggered
+                                    handleAddToCart(product);
+                                }}
+                                class="bg-orange-500 text-white font-semibold py-2 px-4 rounded-full shadow-md hover:bg-orange-600 transition-colors duration-200"
+                            >
+                                Add to Cart
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        {/each}
+    </div>
+</section>

@@ -1,18 +1,16 @@
-import { serializeNonPOJOs } from '$lib/utils';
 import { error } from '@sveltejs/kit';
+import { products } from '$lib/simulatedProducts.js';
 
-export const load = ({ locals }) => {
-	const getProducts = async () => {
-		try {
-			const products = serializeNonPOJOs(await locals.pb.collection('products').getFullList());
-			return products;
-		} catch (err) {
-			console.error('Error fetching products:', err);
-			throw error(404, 'Failed to fetch products');
-		}
-	};
-
-	return {
-		products: getProducts()
-	};
-};
+/** @type {import('./$types').PageServerLoad} */
+export async function load() {
+    try {
+        // Since we are not using PocketBase for products,
+        // we can return the products from our local file.
+        return {
+            products: products
+        };
+    } catch (err) {
+        console.error('Error loading products:', err);
+        throw error(500, 'Could not load products.');
+    }
+}
