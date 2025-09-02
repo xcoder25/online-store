@@ -1,9 +1,10 @@
 import PocketBase from 'pocketbase'
 import { serializeNonPOJOs } from '$lib/utils'
+import { PUBLIC_POCKETBASE_URL } from '$env/static/public'
 
 /** @type {import('@sveltejs/kit').Handle} */
 export const handle = async ({ event, resolve }) => {
-    event.locals.pb = new PocketBase('http://127.0.0.1:8090')
+    event.locals.pb = new PocketBase(PUBLIC_POCKETBASE_URL || 'http://127.0.0.1:8090')
     event.locals.pb.authStore.loadFromCookie(event.request.headers.get('cookie') || '')
 
     if (event.locals.pb.authStore.isValid && event.locals.pb.authStore.model) {
