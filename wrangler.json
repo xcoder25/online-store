@@ -5,6 +5,6 @@
     "PUBLIC_POCKETBASE_URL": "https://your-pocketbase-url.com"
   },
   "assets": {
-    "directory": "./dist"
+    "directory": ".svelte-kit/output/client"
   }
 }
