@@ -1,5 +1,5 @@
 {
-  "name": "stores",
+  "name": "store",
   "compatibility_date": "2025-09-03",
   "vars": {
     "PUBLIC_POCKETBASE_URL": "https://your-pocketbase-url.com"
