@@ -1,7 +1,6 @@
 name = "jaben-stores"
-main = "build/index.js" # or wherever your Worker entry point is
+main = ".svelte-kit/output/server/index.js"
 compatibility_date = "2025-09-03"
 
-[build]
-command = "npm run build"
-upload_format = "service-worker" # or "modules" if using ESM
+[site]
+bucket = ".svelte-kit/output/client"
