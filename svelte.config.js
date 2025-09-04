@@ -1,19 +1,12 @@
-import adapter from '@sveltejs/adapter-cloudflare';
-import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
+import adapter from '@sveltejs/adapter-netlify';
+import { vitePreprocess } from '@sveltejs/vite';
 
-/** @type {import('@sveltejs/kit').Config} */
 const config = {
-	// Consult https://kit.svelte.dev/docs/integrations#preprocessors
-	// for more information about preprocessors
-	preprocess: vitePreprocess(),
+  preprocess: vitePreprocess(),
 
-	kit: {
-		// adapter-cloudflare will generate a Cloudflare Pages compatible build
-		adapter: adapter({
-			// The directory to which the build will be output.
-			outDir: 'build'
-		})
-	}
+  kit: {
+    adapter: adapter(),
+  }
 };
 
 export default config;

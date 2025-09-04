@@ -1,8 +1,0 @@
-name = "jaben-stores"
-main = ".svelte-kit/output/server/index.js"
-compatibility_date = "2025-09-03"
-
-[site]
-bucket = ".svelte-kit/output/client"
-[observability.logs]
-enabled = true
